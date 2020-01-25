@@ -1,0 +1,21 @@
+{% extends "rest_framework/base.html" %}
+{% load i18n %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+{% block branding %}
+    <a class="navbar-brand" rel="nofollow" href="#">
+        {% trans 'Courier Management System' %}
+    </a>
+{% endblock %}
+
+</body>
+</html>

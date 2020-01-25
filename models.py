@@ -1,29 +1,26 @@
 from django.db import models
 
+# from USer.models import USer
+from location.models import Location, Franchise
+# from USer.models import USer
 
 # Create your models here.
+# from location.models import  Location
+# from vehicle.models import Vehicle
 
 
-class LocationType(models.Model):
-    location_type = (
-        ('city', 'City'),
-        ('town', 'Town'),
-        ('village', 'Village'),
+class PackageRates(models.Model):
+    price_package_title = (
+        ('60 rupees', 'BOOK/COPY_Size for less than 500 gram of book/copy'),
+        ('180 rupees of book/copy', 'BOOK/COPY_Size between 500 gm To 1000 gram '),
+        ('250 rupees of book/copy', 'BOOK/COPY_Size between 1000 gm To 2000 gram'),
+        ('45 rupees of documents', 'DOCUMENTS_SIZE less than 30 gram '),
+        ('70 rupees of documents', 'DOCUMENTS_SIZE  between 30gm To 100 gram  '),
+        ('170 rupees of documents', 'DOCUMENTS_Size  between 100 To 200 gram '),
+        ('70 rupees of Other physical material', 'OTHER_PHYSICAL_INSTRUMENTS_Size less than 300 gram  '),
+        ('170 rupees of physical material', 'OTHER_PHYSICAL_INSTRUMENTS_Size between 300 to 1000 gram for other'),
+        ('200 rupees other physical material', 'OTHER_PHYSICLA_INSTRUMENTS_Size more than 1000 gram ')
     )
-    type = models.CharField(max_length=100, choices=location_type, unique=True)
-    owner = models.ForeignKey('auth.User', related_name='locationtype', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.type
-
-
-class Location(models.Model):
-    status=(
-        ('Punjab', 'PUNJAB'),
-            ('Sindh','SINDH'),
-            ('Balochistan','BALOCHISTAN'),
-            ('kpk','KPK'),
-            )
     dist = (
         ('Rawalpindi', 'RAWALPINDI'),
         ('Islamabd', 'ISLAMAABAD'),
@@ -81,70 +78,92 @@ class Location(models.Model):
         ('Rawalakot', 'RAWALAKOT'),
 
     )
-    province = models.CharField(max_length=100, null=True, choices=status)
-    district = models.CharField(max_length=100, null=True, choices=dist)
-    sector = models.CharField(max_length=100, null=True)
-    street = models.CharField(max_length=100,null=True)
-    house_no = models.CharField(max_length=100, null=True)
-    zip_code = models.IntegerField(null=True)
-    owner = models.ForeignKey('auth.User', related_name='location', on_delete=models.CASCADE)
-    location_type = models.ForeignKey(LocationType, related_name='location', on_delete=models.CASCADE)
+    price_per_gram = models.CharField(max_length=100, choices=price_package_title)
+    from_district = models.CharField(max_length=100, blank=True, null=True, choices=dist)
+    to_district = models.CharField(max_length=100, blank=True, null=True,choices=dist)
+    # location = models.ManyToManyField(Location, related_name='packagerates')
+    owner = models.ForeignKey('auth.User', related_name='packagerates', on_delete=models.CASCADE)
 
     def __str__(self):
-        template = '{0.province} {0.district} {0.sector} {0.house_no}'
+        template = '{0.from_district}  {0.to_district}'
         return template.format(self)
 
 
-class Franchise(models.Model):
-    name = models.CharField(max_length=100, null=True)
-    register_num = models.IntegerField(unique=True)
-    num_of_employes = models.IntegerField(null=True)
-    office_starting_timing = models.DateTimeField(null=True)
-    office_closing_timing = models.DateTimeField(null=True)
-    owner = models.ForeignKey('auth.User', related_name='franchise', on_delete=models.CASCADE)
-    email = models.EmailField(unique=True,null=True)
-    location = models.ForeignKey(Location, related_name='franchise', on_delete=models.CASCADE)
+class PackageStatus(models.Model):
+    package_status = (
+        ('PENDING', 'Pending'),
+        ('READY_FOR_PICKUP', 'Ready_For_Pickup'),
+        ('ON_THE_WAY', 'On_Way'),
+        ('AT_FRANCHISE', 'At_Franchise'),
+        ('READY_FOR_SHIPMENT', 'Ready_For_Shipment'),
+        ('SHIPMENT_GOES', 'Shipment_Goes')
+    )
+    status = models.CharField(max_length=100, choices=package_status, unique=True)
+    owner = models.ForeignKey('auth.User', related_name='packagestatus', on_delete=models.CASCADE)
+
+    # "" package = models.OneToOneField(Package, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
-        template = '{0.name} {0.email}'
+        template = ' {0.status}'
         return template.format(self)
 
 
-"""
-class LocationType(models.Model):
-    location_type = (
-        ('C', 'City'),
-        ('T', 'Town'),
-        ('V', 'Village'),
-        )
-    type = models.CharField(max_length=1, choices=location_type)
+class Package(models.Model):
+    package_title = (
+        ("BOOK/COpy", 'Book/Copy'),
+        ('DOCUMENTS', 'Documents'),
+        ('OTHER_PHYSICAL_INSTRUMENTS', "Other_Physical_Instruments")
+
+    )
+
+    name = models.CharField(max_length=100, choices=package_title)
+    # item_type = models.TextField()
+    arrivel_date = models.DateField()
+    owner = models.ForeignKey('auth.User', related_name='package', on_delete=models.CASCADE)
+    packagerates = models.ForeignKey(PackageRates, related_name='package', on_delete=models.CASCADE)
+    # ""vehicle = models.ForeignKey(Vehicle, related_name='package', on_delete=models.CASCADE)
+    # user = models.ForeignKey('USer.USer', related_name='package', on_delete=models.CASCADE)
+    # USer=models.ForeignKey(Employe, related_name='package', on_delete=models.CASCADE)
+    packagestatus = models.ForeignKey(PackageStatus, related_name='package', on_delete=models.CASCADE)
+    sender = models.ForeignKey('USer.USer', related_name='package', on_delete=models.CASCADE,null=True)
+    receiver = models.ForeignKey('USer.USer', related_name='b_package', on_delete=models.CASCADE,null=True)
+    post_person = models.ForeignKey('USer.USer', related_name='c_package', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.type
-"""
-"""
-    gpo=models.CharField(max_length=100)
-    franchise=models.CharField(max_length=100)
-    province=models.CharField(max_length=100)
-    owner=models.ForeignKey('auth.User', related_name='locationtype', on_delete=models.CASCADE)
-    location=models.ForeignKey(Location, related_name='locationtype', on_delete=models.CASCADE)
+        template = '{0.name} {0.packagerates}'
+        return template.format(self)
 
-   """
+
+class PackageBilling(models.Model):
+    owner = models.ForeignKey('auth.User', related_name='packagebilling', on_delete=models.CASCADE)
+
+    # bill_pay=models.CharField(max_length=100, unique=True)
+    package = models.OneToOneField(Package, on_delete=models.CASCADE, primary_key=True)
+    franchise = models.ForeignKey(Franchise, related_name='packagebilling', on_delete=models.CASCADE)
+    """
+    def __str__(self):
+        return self.package.name
 """
-class City(models.Model):
-    zip_code=models.IntegerField(max_length=6)
-    owner=models.ForeignKey('auth.User',related_name='city', on_delete=models.CASCADE)
+
+
+"""
+
+
+Status_Package = (
+    ('pending', 'PENDING'),
+    ('ready_for_shipment', 'READY_FOR_SHIPMENT'),
+    ('on_the_way', 'ON_THE_WAY'),
+    ('at_franchise', 'AT_FRANCHISE'),
+    ('ready_for_pickup', 'READY_FOR_PICKUP'),
+)
+"""
+
+"""
+class PackageStatus(models.Model):
+    status = models.CharField(max_length=15)
+    package = models.ForeignKey(Package, related_name='package_status', on_delete=models.CASCADE)
+    owner = models.ForeignKey('auth.User', related_name='package_status', on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.zip_code
-"""
-
-"""
-class FranchiseType(models.Model):
-    # gpo=models.CharField(max_length=100)
-    type=models.CharField(max_length=100)
-    owner=models.ForeignKey('auth.User',related_name='franchisetype', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.type
+        return self.status
 """

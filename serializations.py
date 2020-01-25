@@ -1,59 +1,66 @@
 from rest_framework import serializers
-from .models import Location, LocationType
-
-
-from django.contrib.auth.models import User
 from django.db import models
 
 from location.models import Franchise
+from location.serializations import FranchiseSerializer
+from vehicle.models import Vehicle
+from .models import Package, PackageRates, PackageStatus, PackageBilling
+
+from django.contrib.auth.models import User
+from USer.models import USer
 
 
-class LocationSerializer(serializers.ModelSerializer):
-    location_type = serializers.SlugRelatedField(queryset=LocationType.objects.all(), slug_field='type')
+class PackageSerializer(serializers.ModelSerializer):
     owner = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field='username')
-    # user= serializers.StringRelatedField(many=True, read_only=True)
-    # packagerates= serializers.StringRelatedField(many=True, read_only=True)
-    # franchise= serializers.StringRelatedField(many=True, read_only=True)
-    # owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    packagerates = serializers.SlugRelatedField(queryset=PackageRates.objects.all(), slug_field='price_per_gram')
+    # vehicle = serializers.SlugRelatedField(queryset=Vehicle.objects.all(), slug_field='name')
+    sender = serializers.SlugRelatedField(queryset=USer.objects.filter(usertype=1), slug_field='first_name', allow_null=True)
+    receiver = serializers.SlugRelatedField(queryset=USer.objects.filter(usertype=2), slug_field='last_name',allow_null=True)
+    post_person = serializers.SlugRelatedField(queryset=USer.objects.filter(usertype=6), slug_field='email',allow_null=True)
 
+    packagestatus = serializers.SlugRelatedField(queryset=PackageStatus.objects.all(), slug_field='status')
+
+    # usertype = serializers.StringRelatedField(many=True, read_only=True)
+    # owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    # packagestatus = serializers.StringRelatedField(many=True,read_only=True)
+    # user = serializers.StringRelatedField(read_only=True)
     class Meta:
-        model = Location
+        model = Package
         fields = '__all__'
 
 
-class LocationTypeSerializer(serializers.ModelSerializer):
+class PackageBillingSerializer(serializers.ModelSerializer):
     owner = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field='username')
+    franchise = serializers.SlugRelatedField(queryset=Franchise.objects.all(), slug_field='email')
+    # franchise=FranchiseSerializer(read_only=True)
+    # package=PackageSerializer(read_only=True)
+    package = serializers.SlugRelatedField(queryset=Package.objects.all(), slug_field='name')
 
-    # location = serializers.StringRelatedField(read_only=True, many=True)
     # owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
-        model = LocationType
+        model = PackageBilling
         fields = '__all__'
 
 
-class FranchiseSerializer(serializers.ModelSerializer):
+class PackageRatesSerializer(serializers.ModelSerializer):
     owner = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field='username')
-    location = serializers.SlugRelatedField(queryset=Location.objects.all(), slug_field='sector')
+    # owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     # user = serializers.StringRelatedField(many=True, read_only=True)
-    # vehicle = serializers.StringRelatedField(many=True, read_only=True)
-    # packagebilling = serializers.StringRelatedField(many=True, read_only=True)
-    # owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    # location = models.OneToOneField(Location, related_name='franchise',on_delete=models.CASCADE)
-    # user = serializers.StringRelatedField(many=True, read_only=True)
-    # vehicle = serializers.StringRelatedField(many=True, read_only=True)
-    # packagebilling = serializers.StringRelatedField(many=True, read_only=True)
+    # package = serializers.StringRelatedField(many=True, read_only=True)
+    # location = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
-        model = Franchise
+        model = PackageRates
         fields = '__all__'
 
 
-"""
-class FranchiseTypeSerializer(serializers.ModelSerializer):
-    owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+class PackageStatusSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(queryset=User.objects.all(), slug_field='username')
+    # owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    # franchise = models.OneToOneField(PackageRates, related_name='packagerates', on_delete=models.CASCADE)
+    # pacakage = serializers.SlugRelatedField(queryset=Package.objects.all(), slug_field='name')
 
     class Meta:
-        model = FranchiseType
-        fields='__all__'
-"""
+        model = PackageStatus
+        fields = '__all__'
